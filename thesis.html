@@ -23,10 +23,15 @@
 
   /* create timeline */
   var timeline = [];
+
+
+
+
+
 // comment from bellow this line
 
 
-  /* define welcome message trial */
+  // /* define welcome message trial */
   var welcome = {
     type: jsPsychSurveyHtmlForm,
     html: `
@@ -203,6 +208,26 @@
   timeline.push(instructions2);
 // comment out to this line
 
+  var keyboardredyprompt = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+    
+    <div style="font-size:40px;">
+      <p>Place your hands over the F and J keys.</p>
+      <p>You will use these keys to submit your responses.</p>
+      <img src="img/keyboardprompt.gif" alt="Get Ready" style="width:60vw;"/>
+    </div>
+    
+    
+    `
+    ,
+    choices: "NO_KEYS",
+    trial_duration: 11000
+  };
+ 
+timeline.push(keyboardredyprompt);
+
+
 
   /* experimental trials */
   /* exp. trial 1 */
@@ -247,7 +272,34 @@ const participantResponseTemplate = (option1, option2) => `
       </tr>
     </table>
   </div>
+  <audio id="warningbeeps"
+            src="audio/2second_ding_buzz.mp3"
+            class="audioPlayer"></audio>
 `;
+
+const participantReproabResponseTemplate = (PreviousSelection) => `
+  <div style="font-size:30px;">
+    <p>Your answer was ${PreviousSelection}.</p>
+    <table class="participantResponseTable">
+      <tr>
+        <td class="option"><span>I am keeping this answer.</span><br/></td>
+        <td class="divider"></td>
+        <td class="option"><span>I am changing this answer.</span><br/></td>
+      </tr>
+      <tr>
+        <td><span class="participantResponseKeyNudge">(Click F)</span></td>
+        <td></td>
+        <td><span class="participantResponseKeyNudge">(Click J)</span></td>
+      </tr>
+    </table>
+  </div>
+  <audio id="warningbeeps"
+            src="audio/2second_ding_buzz.mp3"
+            class="audioPlayer"></audio>
+`;
+
+
+
 var baserate = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -286,11 +338,7 @@ var participantResponse = {
     return participantResponseTemplate(
       jsPsych.evaluateTimelineVariable('option1'),
       jsPsych.evaluateTimelineVariable('option2')
-    ) + `
-      <audio id="warningbeeps"
-            src="audio/2second_ding_buzz.mp3"
-            class="audioPlayer"></audio>
-    `;
+    ) ;
   },
     on_load: function() {
     // Wait 1 seconds after the trial loads, then play
@@ -304,8 +352,120 @@ var participantResponse = {
   data: { task: jsPsych.timelineVariable('dataName') }
 };
 
+
+var participantResponseReprobe = {
+  type: jsPsychHtmlKeyboardResponse,
+
+  stimulus: function () {
+    const taskName = jsPsych.evaluateTimelineVariable('dataName');
+
+    const lastTrialData = jsPsych.data
+      .get()
+      .filter({ task: taskName })
+      .last(1)
+      .values()[0];
+
+    let previousSelection = null;
+
+    if (lastTrialData && lastTrialData.response != null) {
+      if (lastTrialData.response === 'f') {
+        previousSelection = jsPsych.evaluateTimelineVariable('option1');
+      } else if (lastTrialData.response === 'j') {
+        previousSelection = jsPsych.evaluateTimelineVariable('option2');
+      }
+    }
+
+    // If there was no previous selection, show nothing.
+    if (!previousSelection) {
+      return '';
+    }
+
+    // Must return a string of HTML
+    return participantReproabResponseTemplate(previousSelection);
+  },
+
+  // Make trial_duration dynamic so it can depend on previous response
+  trial_duration: function () {
+    const taskName = jsPsych.evaluateTimelineVariable('dataName');
+
+    const lastTrialData = jsPsych.data
+      .get()
+      .filter({ task: taskName })
+      .last(1)
+      .values()[0];
+
+    // If no previous response, end this trial immediately
+    if (!lastTrialData || lastTrialData.response == null) {
+      return 0;
+    }
+
+    // Otherwise, standard 5000 ms duration
+    return 5000;
+  },
+
+  choices: ['f', 'j'],
+
+  on_load: function () {
+    // Wait 1 second after the trial loads, then play the sound
+    setTimeout(function () {
+      const audio = document.getElementById('warningbeeps');
+      if (audio) {
+        audio.play();
+      }
+    }, 1000);
+  },
+
+  data: { task: function () {
+    return jsPsych.evaluateTimelineVariable('dataName') + '_reprobe';
+  } }
+};
+
+
 const practiceprocedure = {
-  timeline: [fixation, baserate, stereotype, participantResponse],
+  timeline: [fixation, baserate, stereotype, participantResponse, participantResponseReprobe],
+  timeline_variables: [
+    /* start of question 1 */
+    {
+      dataName: "practice_question1",
+      baseRateText: `This study contains pool players and basketball players.<br/>There are 500 pool players and 500 basketball players.`,
+      stereotypeText: `Jason is a randomly chosen participant in this study.<br/>He is 29 years old and has lived his whole life in New York.<br/>He has green eyes and black hair.<br/>He drives a light-gray car.`,
+      option1: "Jason is a pool player",
+      option2: "Jason is a basketball player",
+    }, 
+     /* end of question 1 */
+     /* start of question 2 */
+    {
+      dataName: "practice_question2",
+      baseRateText: `This study contains people who live in New York and people who live in Los Angeles.<br/>There are 500 people who live in New York and 500 people who live in Los Angeles.`,
+      stereotypeText: `Christopher is a randomly chosen participant of thi study.<br/>Christopher is 28 years old.<br/>He has a girlfriend and shares an apartment with a friend.<br/>He likes watching basketball.`,
+      option1: "Christopher lives in New York",
+      option2: "Christopher lives in Los Angeles",
+    },
+    /* end of question 2 */
+    /* start of question 3 */
+    {
+      dataName: "practice_question3",
+      baseRateText: `This study contains computer science majors and English majors. There are 500 computer science majors and 500 English majors.`,
+      stereotypeText: `Matt is a randomly chosen participant of this study. Mats is 20 years old and lives in downtown Toronto. Matt's favourite food is pasta with meatballs. His parents are living in Vancouver.`,
+      option1: "Matt is a computer science major",
+      option2: "Matt is an English major",
+    },
+  ]
+};
+
+  // timeline.push(practiceprocedure);
+
+
+  var realquestions = {
+    type: jsPsychSurveyHtmlForm,
+    html: `
+      <p>real questions go here experiment.</p>`,
+    button_label: "Continue",
+  };
+  timeline.push(realquestions);
+
+const experimentalprocedure = {
+  timeline: [fixation, baserate, stereotype, participantResponse, participantResponseReprobe],
   timeline_variables: [
     /* start of question 1 */
     {
@@ -336,12 +496,7 @@ const practiceprocedure = {
   ]
 };
 
-
-
-
-
-
-  timeline.push(practiceprocedure);
+  timeline.push(experimentalprocedure);
 
 
   
