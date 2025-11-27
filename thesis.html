@@ -18,7 +18,10 @@
 
   /* initialize jsPsych */
   var jsPsych = initJsPsych(
-    { on_finish: () => /*jsPsych.data.displayData('csv')*/ jsPsych.data.get().localSave('csv', 'debug_data.csv') }
+    {
+      on_finish: () => /*jsPsych.data.displayData('csv')*/ jsPsych.data.get().localSave('csv', 'debug_data.csv'),
+      minimum_valid_rt: 1000
+    }
   );
 
   /* create timeline */
@@ -28,17 +31,7 @@
 
 
 
-// comment from bellow this line
-
-
-  // /* define welcome message trial */
-  var welcome = {
-    type: jsPsychSurveyHtmlForm,
-    html: `
-      <p>Welcome to the experiment.</p>`,
-    button_label: "Continue",
-  };
-  timeline.push(welcome);
+  // comment from bellow this line
 
   /* define consent trial */
   var consent = {
@@ -173,6 +166,56 @@
 
   timeline.push(consentForm);
 
+  /* Volume Check */
+
+  var volumeup = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+    <p>Please turn the volume up on your device.</p>
+    <p>Click the icon below. What number do you hear?</p>
+    <button id="playaudio" class="jspsych-btn jspsych-survey-html-form">🔊 Click Here</button>
+    <audio src="audio/197014__margo_heston__seven-m.mp3"  controls class="audioPlayer" id="seven"></audio>
+    `,
+    on_load: function () {
+      const playaudiobutton = document.getElementById('playaudio');
+
+      // Enable the button only if both fields are valid
+      function playthedamaudio(){
+        event.preventDefault(); 
+           const audio = document.getElementById("seven");
+    audio.play();
+      }
+
+      function wrongkeyLOL() {
+alert("You have pressed the wrong Key! Booo! Try again lol");
+
+      }
+
+
+
+      // Listen for input changes
+      playaudiobutton.addEventListener('click', playthedamaudio);
+
+      document.onkeypress = function (e) {
+        e = e || window.event;
+        if (e.key != "7"){
+          wrongkeyLOL();
+        }
+
+      }
+
+
+    },
+
+    on_finish: function (){
+
+document.onkeypress = null;
+    },
+
+    choices: ['7']
+  };
+  timeline.push(volumeup)
+
   /* define first instructions trial */
   var instructions1 = {
     type: jsPsychSurveyHtmlForm,
@@ -198,7 +241,7 @@
     type: jsPsychSurveyHtmlForm,
     html: `
         <p>There are no right or wrong answers. <br/> 
-        <strong>Please respond based on your first inclination</strong>. <br/>
+        Please respond based on your first inclination. <br/>
         Do not spend too much time thinking about each decision.</p>
         <p></p>
 
@@ -206,7 +249,7 @@
     button_label: "Continue"
   };
   timeline.push(instructions2);
-// comment out to this line
+  // comment out to this line
 
   var keyboardredyprompt = {
     type: jsPsychHtmlKeyboardResponse,
@@ -224,10 +267,53 @@
     choices: "NO_KEYS",
     trial_duration: 11000
   };
- 
-timeline.push(keyboardredyprompt);
+
+  timeline.push(keyboardredyprompt);
+
+  /* define third instructions trial */
+
+  var instructions3 = {
+    type: jsPsychSurveyHtmlForm,
+    html: `
+    <p>The decision screen will look like this:<p/>
+    <img style=" border: 3px solid black;width:60vw;"src="img/Screenshot 2025-11-23 at 1.04.41 PM.png" alt="Get Ready" />
+    <p>At each decision screen, you will hear a bell ring. Two seconds later, you will hear a buzzer.<p/>
+    <p>You must provide a response between the ring of the bell and the sound of the buzzer.</p>
+    <button id="playaudio" class="jspsych-btn jspsych-survey-html-form">🔊 Click here to hear audio</button>
+    <audio src="audio/2second_ding_buzz.mp3"  controls class="audioPlayer" id="warningbeeps"></audio>
+    <br/>
+    `,
+    on_load: function () {
+      const playaudiobutton = document.getElementById('playaudio');
+
+      // Enable the button only if both fields are valid
+      function playthedamaudio(){
+        event.preventDefault(); 
+           const audio = document.getElementById("warningbeeps");
+    audio.play();
+      }
+
+      // Listen for input changes
+      playaudiobutton.addEventListener('click', playthedamaudio);
+    }
 
 
+
+
+  };
+  timeline.push(instructions3)
+
+  /* define fourth instructions trial */
+
+    var instructions4 = {
+      type: jsPsychSurveyHtmlForm,
+      html: `
+      <p>The experiment will start with three practice trials.<p/>
+      <p>Please press "Continue" when you are ready to begin.<p/>
+      `,
+      button_label: "Continue"
+    };
+    timeline.push(instructions4)
 
   /* experimental trials */
   /* exp. trial 1 */
@@ -238,25 +324,23 @@ timeline.push(keyboardredyprompt);
     choices: "NO_KEYS",
     trial_duration: 1000
   };
- 
 
-
-// simple base rate template
-const baseRateTemplate = (text) => `
-  <div class="baseRateDiv">
-    <p>${text}</p>
-  </div>
-`;
-
-// simple stereotype template
-const stereotypeTemplate = (text) => `
+  // simple stereotype template
+  const stereotypeTemplate = (text) => `
   <div class="stereotypeDiv">
     <p>${text}</p>
   </div>
 `;
 
-// participant response with two options
-const participantResponseTemplate = (option1, option2) => `
+  // simple base rate template
+  const baseRateTemplate = (text) => `
+  <div class="baseRateDiv">
+    <p>${text}</p>
+  </div>
+`;
+
+  // participant response with two options
+  const participantResponseTemplate = (option1, option2) => `
   <div style="font-size:30px;">
     <p>What is most likely?</p>
     <table class="participantResponseTable">
@@ -277,7 +361,7 @@ const participantResponseTemplate = (option1, option2) => `
             class="audioPlayer"></audio>
 `;
 
-const participantReproabResponseTemplate = (PreviousSelection) => `
+  const participantReproabResponseTemplate = (PreviousSelection) => `
   <div style="font-size:30px;">
     <p>Your answer was ${PreviousSelection}.</p>
     <table class="participantResponseTable">
@@ -293,213 +377,332 @@ const participantReproabResponseTemplate = (PreviousSelection) => `
       </tr>
     </table>
   </div>
-  <audio id="warningbeeps"
-            src="audio/2second_ding_buzz.mp3"
-            class="audioPlayer"></audio>
 `;
 
+  var stereotype = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function () {
+      return stereotypeTemplate(jsPsych.evaluateTimelineVariable('stereotypeText'));
+    },
+    choices: "NO_KEYS",
+    trial_duration: 15000
+  };
+
+  var baserate = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function () {
+      return baseRateTemplate(jsPsych.evaluateTimelineVariable('baseRateText'));
+    },
+    choices: "NO_KEYS",
+    trial_duration: 6000
+  };
+
+  // var participantResponse = {
+  //   type: jsPsychHtmlKeyboardResponse,
+  //   stimulus: function() {
+  //     return participantResponseTemplate(
+  //       jsPsych.evaluateTimelineVariable('option1'),
+  //       jsPsych.evaluateTimelineVariable('option2')
+  //     ) +
+  //     '<audio src="audio/650842__andreas__wrong-answer-buzzer.mp3" autoplay controls></audio>';
+  //   },
+  //   choices: ['f', 'j'],
+  //   data: { task: jsPsych.timelineVariable('dataName') }
+
+  // };
+
+  var participantResponse = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function () {
+      return participantResponseTemplate(
+        jsPsych.evaluateTimelineVariable('option1'),
+        jsPsych.evaluateTimelineVariable('option2')
+      );
+    },
+    on_load: function () {
+      // Wait 1 seconds after the trial loads, then play
+      setTimeout(() => {
+        const audio = document.getElementById("warningbeeps");
+        if (audio) audio.play();
+      }, 1000);
+    },
+    choices: ['f', 'j'],
+    trial_duration: 5000,
+    data: { task: jsPsych.timelineVariable('dataName') }
+  };
+
+  var participantResponseReprobe = {
+    type: jsPsychHtmlKeyboardResponse,
+
+    stimulus: function () {
+      const taskName = jsPsych.evaluateTimelineVariable('dataName');
+
+      const lastTrialData = jsPsych.data
+        .get()
+        .filter({ task: taskName })
+        .last(1)
+        .values()[0];
+
+      let previousSelection = null;
+
+      if (lastTrialData && lastTrialData.response != null) {
+        if (lastTrialData.response === 'f') {
+          previousSelection = jsPsych.evaluateTimelineVariable('option1');
+        } else if (lastTrialData.response === 'j') {
+          previousSelection = jsPsych.evaluateTimelineVariable('option2');
+        }
+      }
+
+      // If there was no previous selection, show nothing.
+      if (!previousSelection) {
+        return '';
+      }
+
+      // Must return a string of HTML
+      return participantReproabResponseTemplate(previousSelection);
+    },
+
+    // Make trial_duration dynamic so it can depend on previous response
+    trial_duration: function () {
+      const taskName = jsPsych.evaluateTimelineVariable('dataName');
+
+      const lastTrialData = jsPsych.data
+        .get()
+        .filter({ task: taskName })
+        .last(1)
+        .values()[0];
+
+      // If no previous response, end this trial immediately
+      if (!lastTrialData || lastTrialData.response == null) {
+        return 0;
+      }
+
+      // Otherwise, standard 18000 ms duration
+      return 18000;
+    },
+
+    choices: ['f', 'j'],
 
 
-var baserate = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: function() {
-    return baseRateTemplate(jsPsych.evaluateTimelineVariable('baseRateText'));
-  },
-  choices: "NO_KEYS",
-  trial_duration: 5000
-};
-
-var stereotype = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: function() {
-    return stereotypeTemplate(jsPsych.evaluateTimelineVariable('stereotypeText'));
-  },
-  choices: "NO_KEYS",
-  trial_duration: 5000
-};
-
-// var participantResponse = {
-//   type: jsPsychHtmlKeyboardResponse,
-//   stimulus: function() {
-//     return participantResponseTemplate(
-//       jsPsych.evaluateTimelineVariable('option1'),
-//       jsPsych.evaluateTimelineVariable('option2')
-//     ) +
-//     '<audio src="audio/650842__andreas__wrong-answer-buzzer.mp3" autoplay controls></audio>';
-//   },
-//   choices: ['f', 'j'],
-//   data: { task: jsPsych.timelineVariable('dataName') }
-  
-// };
-
-var participantResponse = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: function() {
-    return participantResponseTemplate(
-      jsPsych.evaluateTimelineVariable('option1'),
-      jsPsych.evaluateTimelineVariable('option2')
-    ) ;
-  },
-    on_load: function() {
-    // Wait 1 seconds after the trial loads, then play
-    setTimeout(() => {
-      const audio = document.getElementById("warningbeeps");
-      if (audio) audio.play();
-    }, 1000);
-  },
-  choices: ['f', 'j'],
-  trial_duration: 5000,
-  data: { task: jsPsych.timelineVariable('dataName') }
-};
-
-
-var participantResponseReprobe = {
-  type: jsPsychHtmlKeyboardResponse,
-
-  stimulus: function () {
-    const taskName = jsPsych.evaluateTimelineVariable('dataName');
-
-    const lastTrialData = jsPsych.data
-      .get()
-      .filter({ task: taskName })
-      .last(1)
-      .values()[0];
-
-    let previousSelection = null;
-
-    if (lastTrialData && lastTrialData.response != null) {
-      if (lastTrialData.response === 'f') {
-        previousSelection = jsPsych.evaluateTimelineVariable('option1');
-      } else if (lastTrialData.response === 'j') {
-        previousSelection = jsPsych.evaluateTimelineVariable('option2');
+    data: {
+      task: function () {
+        return jsPsych.evaluateTimelineVariable('dataName') + '_reprobe';
       }
     }
-
-    // If there was no previous selection, show nothing.
-    if (!previousSelection) {
-      return '';
-    }
-
-    // Must return a string of HTML
-    return participantReproabResponseTemplate(previousSelection);
-  },
-
-  // Make trial_duration dynamic so it can depend on previous response
-  trial_duration: function () {
-    const taskName = jsPsych.evaluateTimelineVariable('dataName');
-
-    const lastTrialData = jsPsych.data
-      .get()
-      .filter({ task: taskName })
-      .last(1)
-      .values()[0];
-
-    // If no previous response, end this trial immediately
-    if (!lastTrialData || lastTrialData.response == null) {
-      return 0;
-    }
-
-    // Otherwise, standard 5000 ms duration
-    return 5000;
-  },
-
-  choices: ['f', 'j'],
-
-  on_load: function () {
-    // Wait 1 second after the trial loads, then play the sound
-    setTimeout(function () {
-      const audio = document.getElementById('warningbeeps');
-      if (audio) {
-        audio.play();
-      }
-    }, 1000);
-  },
-
-  data: { task: function () {
-    return jsPsych.evaluateTimelineVariable('dataName') + '_reprobe';
-  } }
-};
+  };
 
 
-const practiceprocedure = {
-  timeline: [fixation, baserate, stereotype, participantResponse, participantResponseReprobe],
-  timeline_variables: [
-    /* start of question 1 */
-    {
-      dataName: "practice_question1",
-      baseRateText: `This study contains pool players and basketball players.<br/>There are 500 pool players and 500 basketball players.`,
-      stereotypeText: `Jason is a randomly chosen participant in this study.<br/>He is 29 years old and has lived his whole life in New York.<br/>He has green eyes and black hair.<br/>He drives a light-gray car.`,
-      option1: "Jason is a pool player",
-      option2: "Jason is a basketball player",
-    }, 
-     /* end of question 1 */
-     /* start of question 2 */
-    {
-      dataName: "practice_question2",
-      baseRateText: `This study contains people who live in New York and people who live in Los Angeles.<br/>There are 500 people who live in New York and 500 people who live in Los Angeles.`,
-      stereotypeText: `Christopher is a randomly chosen participant of thi study.<br/>Christopher is 28 years old.<br/>He has a girlfriend and shares an apartment with a friend.<br/>He likes watching basketball.`,
-      option1: "Christopher lives in New York",
-      option2: "Christopher lives in Los Angeles",
-    },
-    /* end of question 2 */
-    /* start of question 3 */
-    {
-      dataName: "practice_question3",
-      baseRateText: `This study contains computer science majors and English majors. There are 500 computer science majors and 500 English majors.`,
-      stereotypeText: `Matt is a randomly chosen participant of this study. Mats is 20 years old and lives in downtown Toronto. Matt's favourite food is pasta with meatballs. His parents are living in Vancouver.`,
-      option1: "Matt is a computer science major",
-      option2: "Matt is an English major",
-    },
-  ]
-};
+  const practiceprocedure = {
+    timeline: [fixation, stereotype, baserate, participantResponse],
+    timeline_variables: [
+      /* start of question 1 */
+      {
+        dataName: "practice_question1",
+        baseRateText: `There are 500 pool players and 500 basketball players.`,
+        stereotypeText: `This study contains pool players and basketball players.<br/>Jason is a randomly chosen participant in this study.<br/>He is 29 years old and has lived his whole life in New York.<br/>He has green eyes and black hair.<br/>He drives a light-gray car.`,
+        option1: "Jason is a pool player",
+        option2: "Jason is a basketball player",
+      },
+      /* end of question 1 */
+      /* start of question 2 */
+      {
+        dataName: "practice_question2",
+        baseRateText: `There are 500 people who live in New York and 500 people who live in Los Angeles.`,
+        stereotypeText: `This study contains people who live in New York and people who live in Los Angeles.<br/>Christopher is a randomly chosen participant of thi study.<br/>Christopher is 28 years old.<br/>He has a girlfriend and shares an apartment with a friend.<br/>He likes watching basketball.`,
+        option1: "Christopher lives in New York",
+        option2: "Christopher lives in Los Angeles",
+      },
+      /* end of question 2 */
+      /* start of question 3 */
+      {
+        dataName: "practice_question3",
+        baseRateText: `This study contains computer science majors and English majors. There are 500 computer science majors and 500 English majors.`,
+        stereotypeText: `This study contains computer science majors and English majors.<br/>Matt is a randomly chosen participant of this study. Matt is 20 years old and lives in downtown Toronto. Matt's favourite food is pasta with meatballs. His parents are living in Vancouver.`,
+        option1: "Matt is a computer science major",
+        option2: "Matt is an English major",
+      },
+    ]
+  };
 
-  // timeline.push(practiceprocedure);
+  timeline.push(practiceprocedure);
 
 
   var realquestions = {
     type: jsPsychSurveyHtmlForm,
     html: `
-      <p>real questions go here experiment.</p>`,
+      <p>Now that you have completed the practice trials, you will begin the experimental trials.</p>
+      <p>Please press "Continue" when you are ready to proceed.<p/>`,
     button_label: "Continue",
   };
   timeline.push(realquestions);
 
-const experimentalprocedure = {
-  timeline: [fixation, baserate, stereotype, participantResponse, participantResponseReprobe],
-  timeline_variables: [
-    /* start of question 1 */
-    {
-      dataName: "question1",
-      baseRateText: `This study contains pool players and basketball players.<br/>There are 500 pool players and 500 basketball players.`,
-      stereotypeText: `Jason is a randomly chosen participant in this study.<br/>He is 29 years old and has lived his whole life in New York.<br/>He has green eyes and black hair.<br/>He drives a light-gray car.`,
-      option1: "Jason is a pool player",
-      option2: "Jason is a basketball player",
-    }, 
-     /* end of question 1 */
-     /* start of question 2 */
-    {
-      dataName: "question2",
-      baseRateText: `This study contains people who live in New York and people who live in Los Angeles.<br/>There are 500 people who live in New York and 500 people who live in Los Angeles.`,
-      stereotypeText: `Christopher is a randomly chosen participant of thi study.<br/>Christopher is 28 years old.<br/>He has a girlfriend and shares an apartment with a friend.<br/>He likes watching basketball.`,
-      option1: "Christopher lives in New York",
-      option2: "Christopher lives in Los Angeles",
-    },
-    /* end of question 2 */
-    /* start of question 3 */
-    {
-      dataName: "question3",
-      baseRateText: `This study contains computer science majors and English majors. There are 500 computer science majors and 500 English majors.`,
-      stereotypeText: `Matt is a randomly chosen participant of this study. Mats is 20 years old and lives in downtown Toronto. Matt's favourite food is pasta with meatballs. His parents are living in Vancouver.`,
-      option1: "Matt is a computer science major",
-      option2: "Matt is an English major",
-    },
-  ]
-};
+  const experimentalprocedure = {
+    timeline: [fixation, stereotype, baserate, participantResponse, participantResponseReprobe],
+    timeline_variables: [
+      /* start of question 1 */
+      {
+        dataName: "expQ1",
+        baseRateText: `There are 4 men and 996 women.`,
+        stereotypeText: `This study contains men and women.<br/>Person A is a randomly chosen participant of this study.<br/>Person A is 23 years old and is finishing a degree in engineering.<br/>On Friday nights, Person A likes to go out cruising with friends while listening to loud music and drinking beer.`,
+        option1: "Person A is a man",
+        option2: "Person A is a woman",
+      },
+      /* end of question 1 */
+      /* start of question 2 */
+      {
+        dataName: "expQ2",
+        baseRateText: `There are 5 engineers and 995 lawyers.`,
+        stereotypeText: `This study contains engineers and lawyers.<br/>Jack is a randomly chosen participant of this study.<br/>Jack is 36 years old.<br/>He is not married and somewhat introverted.<br/>He likes to spend his free time reading science fiction and writing computer programs.`,
+        option1: "Jack is an engineer",
+        option2: "Jack is a lawyer",
+      },
+      /* end of question 2 */
+      /* start of question 3 */
+      {
+        dataName: "expQ3",
+        baseRateText: `There are 995 participants who buy their clothes at high-end retailers, and 5 participants who buy their clothes at Wal-Mart.`,
+        stereotypeText: `This study contains participants who buy their clothes at high-end retailers and participants who buy their clothes at Wal-Mart.<br/>Karen is a randomly chosen participant of this study.<br/>Karen is a 33-year-old female.<br/>She works in a business office and drives a Porsche.<br/>She lives in a fancy penthouse with her boyfriend.`,
+        option1: "Karen buys her clothes at high-end retailers",
+        option2: "Karen buys her clothes at Wal-Mart",
+      },
+      /* end of question 3 */
+      /* start of question 4 */
+      {
+        dataName: "expQ4",
+        baseRateText: `There are 3 participants living in condos and 997 living in farmhouses.`,
+        stereotypeText: `This study contains people living in condos and people living in farmhouses.<br/>Kurt is a randomly chosen participant of this study.<br/>Kurt works on Wall Street and is single.<br/>He works long hours and wears Armani suits to work.<br/>He likes wearing shades.`,
+        option1: "Kurt lives in a condo",
+        option2: "Kurt lives in a farmhouse",
+      },
+      /* end of question 4 */
+      /* start of question 5 */
+      {
+        dataName: "expQ5",
+        baseRateText: `There are 997 girls and 3 boys.`,
+        stereotypeText: `This study contains girls and boys.<br/>Person B is a randomly chosen participant of this study.<br/>Person B is 13 years old.<br/>Person B's favourite subject is art.<br/>Person B's favourite things to do are shopping and having sleepovers with friends to gossip about other kids at school.`,
+        option1: " Person B is a girl",
+        option2: "Person B is a boy",
+      },
+      /* end of question 5 */
+      /* start of question 6 */
+      {
+        dataName: "expQ6",
+        baseRateText: `There are 997 nurses and 3 doctors.`,
+        stereotypeText: `This study contains nurses and doctors.<br/>Paul is a randomly chosen participant of this study.<br/>Paul is 34 years old.<br/>He lives in a beautiful home in a posh suburb.<br/>He is well spoken and very interested in politics.<br/>He invests a lot of time in his career.`,
+        option1: "Paul is a nurse",
+        option2: "Paul is a doctor",
+      },
+      /* end of question 6 */
+      /* start of question 7 */
+      {
+        dataName: "expQ7",
+        baseRateText: `There are 4 participants who prefer Star Trek, and 996 participants who prefer Days of Our Lives.`,
+        stereotypeText: `This study contains participants whose favourite series is Star Trek and participants whose favourite series is Days of Our LIves.<br/>Jeremy is a randomly chosen participant of this study.<br/>Jeremy is 26 and doing graduate studies in physics.<br/>He stays at home most of the time and likes to play video games.`,
+        option1: "Jeremy's favourite series is Star Trek",
+        option2: "Jeremy's favourite series is Days of Our Lives",
+      },
+      /* end of question 7 */
+      /* start of question 8 */
+      {
+        dataName: "expQ8",
+        baseRateText: `There are 997 participants who have tattoos and 3 participants who do not have tattoos.`,
+        stereotypeText: `This study contains people with and without tattoos.<br/>Jay is a randomly chosen participant of this study.<br/>Jay is a 29-year-old man.<br/>He has served a short time in prison.<br/>He has been living on his own for 2 years now.<br/>He has an older car and listens to punk music.`,
+        option1: "Jay has a tattoo",
+        option2: "Jay has no tattoo",
+      },
+      /* end of question 8 */
+      /* start of question 9 */
+      {
+        dataName: "expQ9",
+        baseRateText: `There are 996 kindergarten teachers and 4 executive managers.`,
+        stereotypeText: `This study contains kindergarten teachers and executive managers.<br/>Lilly is a randomly chosen participant of this study.<br/>Lilly is 37 years old.<br/>She is married and has 3 kids.<br/>Her husband is a veterinarian.<br/>She is committed to her family and always watches the daily cartoon shows with her kids.`,
+        option1: "Lilly is a kindergarten teacher",
+        option2: "Lilly is an executive manager",
+      },
+      /* end of question 9 */
+      /* start of question 10 */
+      {
+        dataName: "expQ10",
+        baseRateText: `There are 4 Bruce Springsteen fans and 996 Britney Spears fans.`,
+        stereotypeText: `This study contains Bruce Springsteen fans and Britney Spears fans.<br/>Tara is a randomly chosen participant of this study.<br/>Tara is 15.<br/>She loves to go shopping at the mall and to talk with her friends about their crushes at school.`,
+        option1: "Tara is a Bruce Springsteen fan",
+        option2: "Tara is a Britney Spears fan",
+      },
+      /* end of question 10 */
+      /* start of question 11 */
+      {
+        dataName: "expQ11",
+        baseRateText: `There are 5 sixteen-year-olds and 995 fifty-year-olds.`,
+        stereotypeText: `This study contains sixteen-year-olds and fifty-year-olds.<br/>Ellen is a randomly chosen participant of this study.<br/>Ellen likes to listen to hip hop and rap music.<br/>She enjoys wearing tight shirts and jeans.<br/>She's fond of dancing and has a small nose piercing.`,
+        option1: "Ellen is sixteen",
+        option2: "Ellen is fifty",
+      },
+      /* end of question 11 */
+      /* start of question 12*/
+      {
+        dataName: "expQ12",
+        baseRateText: `There are 5 Americans and 995 French people.`,
+        stereotypeText: `This study contains Americans and French people.<br/>Martine is a randomly chosen participant of this study.<br/>Martine is 26 years old.<br/>She is bilingual and reads a lot in her spare time.<br/>She is a very fashionable dresser and great cook.`,
+        option1: "Martine is American",
+        option2: "Martine is French",
+      },
+      /* end of question 12 */
+    ]
+  };
 
   timeline.push(experimentalprocedure);
 
+  // Cognitive Reflection Test
 
-  
+  // CRT Question 1
+
+  const CRT1 = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `
+        <p><strong>Question 1</strong></p>
+        <p>A bat and a ball cost $1.10 total; the bat costs $1.00 more than the ball.</p>
+      `,
+    html: `
+        <p>How many dollars does the ball cost? <input name="name" type="text" id="CRT1responsefield" /></p>
+      `,
+    button_label: "Continue",
+  };
+
+  timeline.push(CRT1);
+
+  // CRT Question 2
+
+  const CRT2 = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `
+        <p><strong>Question 2</strong></p>
+        <p>If 5 machines make 5 widgets in 5 minutes, how long will 100 machines take to make 100 widgets?</p>
+      `,
+    html: `
+        <p> <input name="name" type="text" id="CRT2responsefield" /></p>
+      `,
+    button_label: "Continue",
+
+  };
+
+  timeline.push(CRT2);
+
+  // CRT Question 3
+
+  const CRT3 = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `
+        <p><strong>Question 3</strong></p>
+        <p>In a lake, a patch of lily pads doubles in size each day.</p>
+      `,
+    html: `
+        <p>If it covers the entire lake in 48 days, how long did it take to cover half? <input name="name" type="text" id="CRT3responsefield" /></p>
+      `,
+    button_label: "Continue",
+
+  };
+
+  timeline.push(CRT3);
 
   /* start the experiment */
   jsPsych.run(timeline);
