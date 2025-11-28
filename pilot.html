@@ -4,8 +4,7 @@
 <head>
   <title>My experiment</title>
   <script src="https://unpkg.com/jspsych@8.2.2"></script>
-  <!-- <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script> -->
-   <script src="/plugin-html-keyboard-responseindex.browser.min.js"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@1.0.3"></script>
@@ -21,15 +20,12 @@
   var jsPsych = initJsPsych(
     {
       on_finish: () => /*jsPsych.data.displayData('csv')*/ jsPsych.data.get().localSave('csv', 'debug_data.csv'),
-      // minimum_valid_rt: 1000,
+      minimum_valid_rt: 1000
     }
   );
 
   /* create timeline */
   var timeline = [];
-
-
-
 
 
   // comment from bellow this line
@@ -427,11 +423,8 @@ document.onkeypress = null;
         if (audio) audio.play();
       }, 1000);
     },
-
     choices: ['f', 'j'],
-    trial_duration: 10000,
-    response_start_time: 1000,
-    response_end_time: 3000,
+    trial_duration: 5000,
     data: { task: jsPsych.timelineVariable('dataName') }
   };
 
@@ -656,61 +649,9 @@ document.onkeypress = null;
 
   timeline.push(experimentalprocedure);
 
-  // Cognitive Reflection Test
-
-  // CRT Question 1
-
-  const CRT1 = {
-    type: jsPsychSurveyHtmlForm,
-    preamble: `
-        <p><strong>Question 1</strong></p>
-        <p>A bat and a ball cost $1.10 total; the bat costs $1.00 more than the ball.</p>
-      `,
-    html: `
-        <p>How many dollars does the ball cost? <input name="name" type="text" id="CRT1responsefield" /></p>
-      `,
-    button_label: "Continue",
-  };
-
-  timeline.push(CRT1);
-
-  // CRT Question 2
-
-  const CRT2 = {
-    type: jsPsychSurveyHtmlForm,
-    preamble: `
-        <p><strong>Question 2</strong></p>
-        <p>If 5 machines make 5 widgets in 5 minutes, how long will 100 machines take to make 100 widgets?</p>
-      `,
-    html: `
-        <p> <input name="name" type="text" id="CRT2responsefield" /></p>
-      `,
-    button_label: "Continue",
-
-  };
-
-  timeline.push(CRT2);
-
-  // CRT Question 3
-
-  const CRT3 = {
-    type: jsPsychSurveyHtmlForm,
-    preamble: `
-        <p><strong>Question 3</strong></p>
-        <p>In a lake, a patch of lily pads doubles in size each day.</p>
-      `,
-    html: `
-        <p>If it covers the entire lake in 48 days, how long did it take to cover half? <input name="name" type="text" id="CRT3responsefield" /></p>
-      `,
-    button_label: "Continue",
-
-  };
-
-  timeline.push(CRT3);
-
   /* start the experiment */
   jsPsych.run(timeline);
-  // console.log(jsPsych.data.get())
+  console.log(jsPsych.data.get())
 
 </script>
 
