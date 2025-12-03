@@ -7,7 +7,7 @@ export async function onRequestPost(context) {
         console.log(request)
         let data;
 
-        data = await request.text;
+        data = await request.text();
         console.log("data");
 
         console.log(data);
