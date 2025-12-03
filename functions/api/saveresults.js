@@ -13,6 +13,7 @@ export async function onRequestPost(context) {
         console.log(data);
     }
     catch (error){
+        context.log("error")
         console.log(error);
     }
 
