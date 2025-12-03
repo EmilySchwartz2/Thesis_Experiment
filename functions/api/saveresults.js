@@ -13,6 +13,17 @@ export async function onRequestPost(context) {
     }
 
 
-        return new Response("something", status: 400)
+       return new Response(JSON.stringify({
+            status: 5000,
+            
+        }), {
+            status: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Content-Type': 'application/json',
+            }
+        });
+
   
 }
