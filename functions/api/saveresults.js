@@ -2,10 +2,13 @@
 export async function onRequestPost(context) {
     const { request, env } = context;
     try{
+                console.log("request")
+
         console.log(request)
         let data;
 
         data = await request.data;
+        console.log("data");
 
         console.log(data);
     }
